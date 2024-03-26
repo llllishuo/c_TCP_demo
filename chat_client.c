@@ -32,12 +32,25 @@ void send_msg(const char *msg){
   }  
 }
 /*
+ * 退出登录
+ * */
+void Im_exit(struct User user){
+  static char msg[MAX_BUFFER];
+  strcpy(msg, user.username);
+  strcat(msg, " logged out...");
+  send_msg(msg);
+  exit(1);
+}
+/*
  * 信息输入并发送
  * */
 void say(struct User user){
   static char buffer[MAX_BUFFER];
   printf("say: ");  
-  fgets(buffer, MAX_BUFFER, stdin);  
+  fgets(buffer, MAX_BUFFER, stdin); 
+  if(strcmp(buffer, "exit\n") == 0){
+    Im_exit(user);
+  }
   buffer[strcspn(buffer, "\n")] = 0;
   static char msg[MAX_BUFFER];
   strcpy(msg, user.username);
@@ -72,11 +85,12 @@ void connect_server_msg(){
   static char buffer[MAX_BUFFER];
   ssize_t n;  
   socklen_t server_len = sizeof(server_addr);  
-  n =  read(client_fd, buffer, MAX_BUFFER); 
-  if(n == 0) return;
+  n = recvfrom(client_fd, buffer, MAX_BUFFER, 0, (struct sockaddr*)&server_addr, &server_len);  
+  if(n <= 0) return;
   buffer[n] = '\0';  
   printf("\n%s\nsay: ", buffer);  
 }
+
 
 /*
  * 信息接收线程
